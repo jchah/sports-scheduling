@@ -1,2 +1,2 @@
 # sports-scheduling
-Back End MEVN Sports Scheduling Application
+Backend MEVN Sports Scheduling Application
