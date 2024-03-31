@@ -63,7 +63,7 @@ app.put('/events/:id', (req, res) => {
 
 // Delete a single event by ID
 app.delete('/events/:id', (req, res) => {
-    Event.findByIdAndRemove(req.params.id)
+    Event.findByIdAndDelete(req.params.id)
         .then(event => {
             if (!event) {
                 return res.status(404).json({ message: "Event not found" });
@@ -110,7 +110,7 @@ app.put('/teams/:id', (req, res) => {
 
 // Delete a team by ID
 app.delete('/teams/:id', (req, res) => {
-    Team.findByIdAndRemove(req.params.id)
+    Team.findByIdAndDelete(req.params.id)
         .then(team => {
             if (!team) return res.status(404).json({ message: "Team not found" });
             res.json({ message: "Team deleted successfully" });
@@ -156,7 +156,7 @@ app.put('/leagues/:id', (req, res) => {
 
 // Delete a league by ID
 app.delete('/leagues/:id', (req, res) => {
-    League.findByIdAndRemove(req.params.id)
+    League.findByIdAndDelete(req.params.id)
         .then(league => {
             if (!league) return res.status(404).json({ message: "League not found" });
             res.json({ message: "League deleted successfully" });
@@ -201,7 +201,7 @@ app.put('/users/:id', (req, res) => {
 
 // Delete a user by ID
 app.delete('/users/:id', (req, res) => {
-    User.findByIdAndRemove(req.params.id)
+    User.findByIdAndDelete(req.params.id)
         .then(user => {
             if (!user) return res.status(404).json({ message: "User not found" });
             res.json({ message: "User deleted successfully" });
