@@ -6,8 +6,8 @@ const leagueSchema = new mongoose.Schema({
     teams: [{
         type: String,
         ref: 'Team'
-    }]
-    // Additional fields like season, rules, etc. can be added here
+    }],
+    division: { type: String, required: true },
 });
 
 const League = mongoose.model('League', leagueSchema);
