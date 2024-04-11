@@ -18,7 +18,6 @@ const eventSchema = new mongoose.Schema({
     league: {
         type: String,
     }
-    // Additional fields like status, scores, etc. can be added here
 });
 
 const Event = mongoose.model('Event', eventSchema);

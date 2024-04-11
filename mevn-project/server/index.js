@@ -208,3 +208,38 @@ app.delete('/users/:id', (req, res) => {
         })
         .catch(err => res.status(400).json({ message: "Error deleting user", error: err }));
 });
+
+const nodemailer = require('nodemailer');
+const schedule = require('node-schedule');
+
+const user = process.env.FROM_EMAIL;
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: user,
+        pass: process.env.EMAIL_PASS,
+    }
+});
+
+app.post('/schedule-email', async (req, res) => {
+    const { to, subject, body, sendAt } = req.body;
+
+    try {
+        schedule.scheduleJob(new Date(sendAt), async function() {
+            const info = await transporter.sendMail({
+                from: `"Friendly Reminder" <${user}>`,
+                to,
+                subject,
+                text: body,
+            });
+
+            console.log('Scheduled Message sent: %s', info.messageId);
+        });
+
+        res.send({ message: 'Email scheduled successfully' });
+    } catch (error) {
+        console.error('Failed to schedule email:', error);
+        res.status(500).send({ error: 'Failed to schedule email', details: error });
+    }
+});
