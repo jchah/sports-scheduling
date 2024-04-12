@@ -3,9 +3,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('./db')
 const Event = require('./models/Event')
-const Team = require('./models/Team')
 const League = require('./models/League')
 const User = require('./models/User')
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -16,10 +16,6 @@ app.use(express.urlencoded({ extended: false }));
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-
-// Rest API endpoints for CRUD operations
-
-// Event Routes
 
 // Create a new event
 app.post('/events', (req, res) => {
@@ -72,52 +68,6 @@ app.delete('/events/:id', (req, res) => {
         })
         .catch(err => res.status(500).json({ message: "Error deleting event", error: err }));
 });
-
-// Create a new team
-app.post('/teams', (req, res) => {
-    const newTeam = new Team(req.body);
-    newTeam.save()
-        .then(team => res.status(201).json(team))
-        .catch(err => res.status(400).json({ message: "Error creating team", error: err }));
-});
-
-// Retrieve all teams
-app.get('/teams', (req, res) => {
-    Team.find()
-        .then(teams => res.json(teams))
-        .catch(err => res.status(400).json({ message: "Error fetching teams", error: err }));
-});
-
-// Retrieve a single team by ID
-app.get('/teams/:id', (req, res) => {
-    Team.findById(req.params.id)
-        .then(team => {
-            if (!team) return res.status(404).json({ message: "Team not found" });
-            res.json(team);
-        })
-        .catch(err => res.status(400).json({ message: "Error fetching team", error: err }));
-});
-
-// Update an existing team by ID
-app.put('/teams/:id', (req, res) => {
-    Team.findByIdAndUpdate(req.params.id, req.body, { new: true })
-        .then(team => {
-            if (!team) return res.status(404).json({ message: "Team not found" });
-            res.json(team);
-        })
-        .catch(err => res.status(400).json({ message: "Error updating team", error: err }));
-});
-
-// Delete a team by ID
-app.delete('/teams/:id', (req, res) => {
-    Team.findByIdAndDelete(req.params.id)
-        .then(team => {
-            if (!team) return res.status(404).json({ message: "Team not found" });
-            res.json({ message: "Team deleted successfully" });
-        })
-        .catch(err => res.status(400).json({ message: "Error deleting team", error: err }));
-});
-
 
 // Create a new league
 app.post('/leagues', (req, res) => {
@@ -212,12 +162,12 @@ app.delete('/users/:id', (req, res) => {
 const nodemailer = require('nodemailer');
 const schedule = require('node-schedule');
 
-const user = process.env.FROM_EMAIL;
+const userEmail = process.env.FROM_EMAIL;
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: user,
+        user: userEmail,
         pass: process.env.EMAIL_PASS,
     }
 });
@@ -228,7 +178,7 @@ app.post('/schedule-email', async (req, res) => {
     try {
         schedule.scheduleJob(new Date(sendAt), async function() {
             const info = await transporter.sendMail({
-                from: `"Friendly Reminder" <${user}>`,
+                from: `"Friendly Reminder" <${userEmail}>`,
                 to,
                 subject,
                 text: body,
@@ -241,5 +191,64 @@ app.post('/schedule-email', async (req, res) => {
     } catch (error) {
         console.error('Failed to schedule email:', error);
         res.status(500).send({ error: 'Failed to schedule email', details: error });
+    }
+});
+
+// Login route
+app.post('/login', async (req, res) => {
+    const { username, password, } = req.body;
+
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Compare the hashed password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        // Assuming the user object has a role property
+        res.json({
+            message: "Login successful",
+            data: {
+                user: user.username,
+                role: user.role
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error", error: err });
+    }
+});
+
+// Create a new account
+app.post('/create-account', async (req, res) => {
+    const { username, password, role } = req.body;
+    try {
+        // Check if user already exists
+        const existingUser = await User.findOne({ username: username });
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const newUser = new User({
+            username,
+            password: hashedPassword,
+            role
+        });
+
+        await newUser.save();  // Save the new user to the database
+
+        res.status(201).json({ message: "Account created successfully", user: { username, role } });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to create account", error: err });
     }
 });
