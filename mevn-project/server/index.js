@@ -181,7 +181,7 @@ app.post('/schedule-email', async (req, res) => {
                 from: `"Friendly Reminder" <${userEmail}>`,
                 to,
                 subject,
-                text: body,
+                text: body
             });
 
             console.log('Scheduled Message sent: %s', info.messageId);
