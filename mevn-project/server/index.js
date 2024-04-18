@@ -210,7 +210,6 @@ app.post('/login', async (req, res) => {
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
-        // Assuming the user object has a role property
         res.json({
             message: "Login successful",
             data: {
