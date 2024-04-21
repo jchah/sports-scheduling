@@ -285,7 +285,7 @@ app.put('/teams/:id', (req, res) => {
 });
 
 app.delete('/teams/:id', (req, res) => {
-    Team.findByIdAndRemove(req.params.id)
+    Team.findByIdAndDelete(req.params.id)
         .then(team => {
             if (!team) return res.status(404).json({ message: "Team not found" });
             res.json({ message: "Team deleted successfully" });
