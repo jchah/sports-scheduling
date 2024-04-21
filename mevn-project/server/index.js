@@ -161,6 +161,7 @@ app.delete('/users/:id', (req, res) => {
 
 const nodemailer = require('nodemailer');
 const schedule = require('node-schedule');
+const Team = require("./models/Team");
 
 const userEmail = process.env.FROM_EMAIL;
 
@@ -251,3 +252,44 @@ app.post('/create-account', async (req, res) => {
         res.status(500).json({ message: "Failed to create account", error: err });
     }
 });
+
+app.post('/teams', (req, res) => {
+    const newTeam = new Team(req.body);
+    newTeam.save()
+        .then(team => res.status(201).json(team))
+        .catch(err => res.status(400).json({ message: "Error creating team", error: err }));
+});
+
+app.get('/teams', (req, res) => {
+    Team.find()
+        .then(teams => res.json(teams))
+        .catch(err => res.status(400).json({ message: "Error fetching teams", error: err }));
+});
+
+app.get('/teams/:id', (req, res) => {
+    Team.findById(req.params.id)
+        .then(team => {
+            if (!team) return res.status(404).json({ message: "Team not found" });
+            res.json(team);
+        })
+        .catch(err => res.status(400).json({ message: "Error fetching team", error: err }));
+});
+
+app.put('/teams/:id', (req, res) => {
+    Team.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        .then(team => {
+            if (!team) return res.status(404).json({ message: "Team not found" });
+            res.json(team);
+        })
+        .catch(err => res.status(400).json({ message: "Error updating team", error: err }));
+});
+
+app.delete('/teams/:id', (req, res) => {
+    Team.findByIdAndRemove(req.params.id)
+        .then(team => {
+            if (!team) return res.status(404).json({ message: "Team not found" });
+            res.json({ message: "Team deleted successfully" });
+        })
+        .catch(err => res.status(400).json({ message: "Error deleting team", error: err }));
+});
+
