@@ -1,12 +1,22 @@
 const mongoose = require('mongoose');
 
 const teamSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    members: [{
+    name: {
         type: String,
-        ref: 'User'
-    }]
-    // Additional fields like coach, category, etc. can be added here
+        required: true,
+        maxlength: 40,
+    },
+    sport: {
+        type: String,
+        required: true,
+        maxlength: 40,
+    },
+    players: [
+        {
+            type: String,
+            maxlength: 100,
+        },
+    ],
 });
 
 const Team = mongoose.model('Team', teamSchema);
