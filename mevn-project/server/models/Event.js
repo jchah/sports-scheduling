@@ -12,9 +12,7 @@ const eventSchema = new mongoose.Schema({
         required: true
     },
     endTime: Date,
-    teams: [{
-        type: String,
-    }],
+    teams: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Team' }],
     league: {
         type: String,
     }
